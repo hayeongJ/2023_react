@@ -57,6 +57,37 @@ function Create(props) {
         </form>
     </article>
 }
+
+function Update(props) {
+    // props 내용을 변경하기 위해서 useState를 사용하자
+    const[title, setTitle] = useState(props.title);
+    const[body, setBody] = useState(props.body);
+
+    return<article>
+        <h2>Update</h2>
+        <form onSubmit={(e)=>{
+            e.preventDefault();
+            const title = e.target.title.value;
+            const body = e.target.body.value;
+            props.onUpdate(title,body);
+        }}>
+            {/* props는 변경할 수 없다. */}
+            {/*<p><input type="text" name="title" value={props.title} /></p>
+            <p><textarea name="body" value={props.body} /></p>
+            <p><input type="submit" value="update" /></p> */}
+            <p><input type="text" name="title" value={title} onChange={(e)=>{
+                setTitle(e.target.value);
+            }} />
+            </p>
+            <p><textarea name="body" value={body} onChange={(e)=>{
+                setBody(e.target.value);
+            }}></textarea></p>
+            <p><input type="submit" value="Update" /></p>
+        </form>
+    </article>
+}
+
+
 export default function Main02(){
     //const top = [
     //    {id:1, title:"HTML", body: "Hypertext Markup Language"},
@@ -93,8 +124,25 @@ export default function Main02(){
         content = <Article title={title} body={body} />;
        
         // 모드가 READ일 때만 수정을 나오게 한다.
-        contextControl = <li><a href={"/update/"+id}>Update</a></li>
+        // contextControl = <li><a href={"/update/"+id}>Update</a></li>
         // 하나를 수정하기 위해서 아이디를 받아서 추가하자.
+        contextControl =<>
+             <li><a href={"/update/"+id} onClick={(e)=>{
+                e.preventDefault();
+                setMode('UPDATE');
+             }}>Update</a></li>
+              <li><input type="button" value="Delete" onClick={()=>{
+                // 선택한 객체를 뺀 나머지를 담고 보여주기 위해서
+                const newTops = [];
+                for (let i = 0; i < top.length; i++) {
+                    if(top[i].id !== Number(id)){
+                        newTops.push(top[i]);
+                    }
+                }
+                setTop(newTops);
+              }} /></li>
+        </> 
+
 
     }else if(mode === 'CREATE'){
         content = <Create onCreate={(_title, _body)=>{
@@ -111,6 +159,35 @@ export default function Main02(){
             setId(nextId);
             setNextId(nextId+1);
             
+        }} />
+    }else if(mode === "UPDATE"){
+        let title, body = null;
+        console.log(top);
+        console.log(id);
+        for (let i = 0; i < top.length; i++) {
+            console.log("top.id : " + top[i].id + "id : "+ id);
+            // 받은 id랑 같으면
+            if(top[i].id === Number(id)){
+                title = top[i].title;
+                body = top[i].body;
+             }
+        }
+        content = <Update title={title} body={body} onUpdate={(_title, _body)=>{
+            console.log(_title);
+            console.log(_body);
+            console.log(id);
+            // alert("update 실행하기");
+            // 원래 내용 복사
+            const newTops =[...top];
+            const updateTop = {id:Number(id), title:_title, body:_body};
+            for (let i = 0; i < newTops.length; i++) {
+                if(newTops[i].id === Number(id)){
+                    newTops[i] = updateTop;
+                    break;
+                } 
+            }
+            setTop(newTops);
+            setMode("READ");
         }} />
     }
     return(
